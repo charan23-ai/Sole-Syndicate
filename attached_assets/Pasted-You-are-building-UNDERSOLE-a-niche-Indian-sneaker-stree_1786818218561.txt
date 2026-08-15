@@ -1,0 +1,141 @@
+You are building "UNDERSOLE" — a niche Indian sneaker & streetwear editorial zine. This is a production deployment for a real launch, not a demo. Build it fully functional, not a mockup with placeholder buttons.
+
+═══════════════════════════════════════
+1. DESIGN SYSTEM DIRECTIVE
+═══════════════════════════════════════
+
+VISUAL IDENTITY — dark editorial brutalist, streetwear-zine aesthetic:
+- Background: #121212 (concrete dark), secondary surface #1A1A1A
+- Primary text: #E5E0D8 (warm beige)
+- Accent/CTA: #FF4500 (acid-orange) — used sparingly, only for interactive elements, underlines, and key highlights, never as a background fill for large areas
+- Crisp white (#FFFFFF) reserved for headlines only
+- Borders: hairline 1px solid rgba(229,224,216,0.15) — no rounded-corner soft-UI, keep corners sharp (border-radius: 0 or max 2px)
+- Add a subtle animated/static 35mm film-grain noise overlay (CSS SVG noise filter or a repeating noise PNG at ~4% opacity) over the whole viewport, fixed position, pointer-events: none, so it never blocks interaction
+
+TYPOGRAPHY:
+- Masthead/headline font: a bold condensed sans-serif (use "Archivo Black" or "Anton" from Google Fonts if no custom font available)
+- Body font: a clean grotesque sans (Inter or Neue Montreal-style) at slightly increased letter-spacing for editorial feel
+- Set generous line-height (1.6+) on body copy for long-form readability
+
+LAYOUT:
+- High-density editorial grid: asymmetric multi-column layout on desktop (not a centered single-column blog), collapsing cleanly to single-column on mobile
+- Smooth, subtle hover states only: slight opacity shift + 1px orange underline reveal on links/cards — no bouncy or scale-heavy animations, this is a dry, confident brand, not a playful one
+- Generous whitespace/negative space between editorial sections — density in the grid, breathing room in the margins
+
+TECH STACK:
+- Next.js (App Router) + Tailwind CSS + Lucide React icons
+- Use a lightweight Node/Express-style API route inside Next.js (app/api/*) rather than a separate backend — keep this a single deployable app
+- No unnecessary heavy dependencies — this needs to build and deploy fast
+
+═══════════════════════════════════════
+2. CORE FEATURES & PAGE ARCHITECTURE
+═══════════════════════════════════════
+
+--- HOMEPAGE ---
+- Full-viewport hero: "UNDERSOLE" masthead in bold condensed type, tagline "Every step has a story." beneath it in smaller warm-beige text
+- Issue badge: small pill/tag reading "ISSUE №1" in acid-orange outline
+- Hero cover image (use an <img> placeholder pointing to /public/images/cover.jpg — I will supply the actual generated image after this builds; use a dark placeholder div with the correct aspect ratio in the meantime)
+- Clicking/tapping the hero image opens a fullscreen modal lightbox of the cover
+- Below the fold: a horizontal-scroll or grid preview of all 5 pieces in Issue #1, each as a card with header-image placeholder, title, one-line dek, and a "Read →" link
+- Inline subscription form embedded directly on the homepage (see section on Subscription Engine below) — do not make subscribing a separate page, it should be frictionless right on the landing view
+
+--- ISSUE #1 READER (route: /issue-1) ---
+Build this as a single scrollable long-form reading page (not paginated), structured in this exact order:
+1. Masthead recap header (smaller than homepage version) + reading progress bar fixed to the top of viewport (thin 2px acid-orange bar that fills as the user scrolls)
+2. Table of contents strip — 5 anchor links, one per piece, that smooth-scroll to each section
+3. PIECE 1 — "The Rise of India's Sneaker Resale Economy" — header image placeholder (16:9), full essay text (use realistic placeholder long-form text of ~1000 words for now, structured in paragraphs — I will replace with final copy), AI Disclosure Block rendered as a distinct visually-separated footer strip (subtle border-top, smaller muted text) at the end of the piece
+4. PIECE 2 — "Air Jordan 1 Retro High OG 'Lost & Found' — Is It Worth the Hype in India?" — same structure, ~500 words, AI Disclosure Block at end
+5. PIECE 3 — "Top 10 Indian Sneaker Customizers Right Now" — render as an interactive filterable/sortable list, NOT plain text:
+   - Show the 4 ranking criteria as small labeled chips at the top of the section (Originality, Consistency, Cultural Relevance, Community Reputation)
+   - Each of the 10 entries is a card: rank number (large, acid-orange), customizer name, region tag (Bangalore/Mumbai/Delhi/Hyderabad/etc as a small pill), signature-style one-liner, 2-3 sentence write-up
+   - Add a region filter (buttons or dropdown: All / Bangalore / Mumbai / Delhi / Hyderabad / Pune / Chennai) that filters the visible cards client-side, no page reload
+   - AI Disclosure Block at the end of this section explicitly noting these are illustrative archetypes
+6. PIECE 4 — "Cricket Culture Meets Sneaker Culture: The New Wave" — same long-form structure as pieces 1-2, ~400 words, AI Disclosure Block at end
+7. PIECE 5 — "The Interview: Rehan, Underground Customizer" — render as a distinct Q&A visual format:
+   - Subject intro card at top (name, age, city, one-line bio) styled differently from the rest of the page — treat it like a contact card
+   - Each question in bold/orange, each answer in a slightly indented or left-bordered blockquote style to visually separate interviewer from subject
+   - Include a simple "audio player UI" component at the top of this section — a styled play/pause button + waveform-style static bars + a fake time counter (00:00 / 03:42) — this is a VISUAL/UI component only, it does not need a real audio file wired up, just build the interactive-looking player shell with working play/pause icon-toggle state
+   - Simulated Interview Disclosure Block (the more explicit "composite/fictional persona" version) rendered clearly at the end, slightly more prominent styling than the standard disclosure blocks since this one carries more weight
+
+INTERACTIVE COMPONENTS (build these as reusable components):
+- PullQuoteWidget: any paragraph can be visually designated as a pull-quote (larger italic type, acid-orange left border) with a small "Share" icon button next to it that copies a pre-formatted version of the quote + page URL to clipboard, with a toast confirmation ("Copied to clipboard")
+- ReadingProgressBar: fixed top-of-viewport, tracks scroll position of the current article container, smooth width transition
+- Toast component: bottom-center or bottom-right, auto-dismiss after ~3 seconds, used for subscribe-success and copy-quote confirmations
+
+═══════════════════════════════════════
+3. SUBSCRIPTION & AUTOMATION ENGINE
+═══════════════════════════════════════
+
+FRONTEND FORM:
+- Single email input + "Subscribe" button, inline (not a modal) — place one instance on the homepage and one at the bottom of the Issue #1 reader page
+- On submit: disable button, show a subtle loading state, POST to /api/subscribe
+- On success: swap the form for a success state inline ("You're in. Check your email.") AND trigger the Toast component
+- On error (duplicate email, invalid email, server error): show inline error text under the input, do not lose the user's typed email
+- Show a small live subscriber-count badge near the form: "Join 15+ Scene Insiders" — pull the actual current count from the backend on page load (see API below), don't hardcode the number
+
+BACKEND — /api/subscribe (POST):
+- Accept { email } in the request body
+- Validate email format server-side (basic regex is fine)
+- Store the subscriber in a simple persistent store — use a lightweight approach appropriate for Replit: either Replit's built-in Database (Replit DB) or a simple SQLite file via better-sqlite3. Do NOT use localStorage for this — that only lives in the browser and won't give a real shared subscriber count. Table/store shape: { email, subscribedAt, source }
+- Check for duplicate email before inserting; if duplicate, return a 200 with a message like "You're already in the crew" rather than erroring
+- On successful new subscription, trigger the welcome email send (see below) and return { success: true, subscriberCount: <current total> }
+
+BACKEND — /api/subscribers/count (GET):
+- Return the current total subscriber count as { count: number } — used by the frontend badge on page load
+
+WELCOME EMAIL SEND:
+- Use the Resend API (https://resend.com) for sending — it has the simplest setup for a fast Replit deploy. Install the `resend` npm package.
+- Create a helper function sendWelcomeEmail(email) that sends:
+  Subject: "You're in. Welcome to Undersole 👟"
+  Body (HTML, styled to loosely match the dark/acid-orange brand — dark background email with the orange accent on the button/link):
+  ---
+  Hey —
+
+  You just joined Undersole, a zine about the sneaker and streetwear scene in India — the resale hustle, the customizers doing wild things in their bedrooms, the culture nobody's writing about properly.
+
+  Issue #1 is live now. Start here → [link to /issue-1]
+
+  No spam, no fluff — just real coverage of a scene worth taking seriously.
+
+  — The Undersole team
+  ---
+- Call sendWelcomeEmail(email) from inside /api/subscribe immediately after a successful new-subscriber insert. Wrap the email send in a try/catch so that if the email API fails, the subscription itself still succeeds and is still counted — log the email failure to the console but don't fail the whole request over it.
+
+TEST-VERIFY ENDPOINT (dev-only, for process-pack proof):
+- Build /api/subscribe/test (POST) — protected by checking a header or query param against ADMIN_PASS — that lets me manually trigger a test subscription + welcome-email send with a hardcoded test email, so I can screenshot the automation firing without needing to use a second real email address. Return a clear JSON response indicating whether the email send succeeded.
+
+═══════════════════════════════════════
+4. ENVIRONMENT VARIABLES & SETUP REFERENCE SHEET
+═══════════════════════════════════════
+
+Set these in Replit's Secrets panel (never hardcode these in source):
+- RESEND_API_KEY — API key from resend.com for sending the welcome email
+- ADMIN_PASS — a password string I choose, used only to gate the /api/subscribe/test verification endpoint (not used for anything else, not a real user auth system)
+
+INSTALL COMMAND (run once):
+npm install next react react-dom tailwindcss lucide-react resend better-sqlite3
+
+BUILD ORDER (execute in this sequence):
+1. Scaffold the Next.js app with Tailwind configured using the design tokens from section 1 (add the color values as custom Tailwind theme colors: bg-undersole-dark, text-undersole-beige, text-undersole-orange, etc. — don't use raw hex classes scattered everywhere, centralize them in tailwind.config)
+2. Build the homepage layout and hero section
+3. Build the Issue #1 reader page with all 5 piece sections and placeholder long-form text
+4. Build the Top 10 Ranking filterable component
+5. Build the Interview section with the play/pause UI shell
+6. Build the PullQuoteWidget and ReadingProgressBar components and wire them into the reader page
+7. Set up the SQLite subscriber store and the /api/subscribe, /api/subscribers/count, and /api/subscribe/test routes
+8. Wire up Resend and test the welcome email using the /api/subscribe/test endpoint BEFORE connecting it to the real frontend form
+9. Connect the real frontend form to /api/subscribe, add the toast + inline success/error states
+10. Run the dev server and do a full manual click-through: homepage → subscribe → toast fires → issue page loads → filter the ranking → copy a pull quote → confirm toast fires again
+
+RUN & VERIFY:
+- Start the dev server (npm run dev)
+- Hit /api/subscribers/count in the browser first — should return { count: 0 } on a fresh database
+- POST to /api/subscribe/test with the ADMIN_PASS header to fire a test welcome email — confirm in the console/logs that Resend returned success
+- Load the homepage, confirm the subscriber badge now reflects the correct count
+- Only after this manual verification passes, prepare for deployment via Replit's Deploy feature
+
+DEPLOYMENT:
+- Use Replit's built-in Deploy (Autoscale or Static+API as appropriate for a Next.js app with API routes — use Autoscale since this has server-side API routes, not a static site)
+- After deploy, re-run the /api/subscribers/count check against the live URL to confirm the database and API routes work in production, not just locally
+
+Do not stub out the subscription backend with a fake success message — it must actually persist subscribers and actually attempt to send the welcome email via Resend. This is being graded on whether the automation is real and demonstrably fires, not on whether the UI looks like it works.
