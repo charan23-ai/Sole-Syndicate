@@ -1,6 +1,6 @@
-# [Project name]
+# UNDERSOLE
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An editorial web zine about India's sneaker and streetwear scene, with Issue 01 stories and a real newsletter signup.
 
 ## Run & Operate
 
@@ -22,23 +22,36 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/undersole/src/pages/Home.tsx` — Issue 01 landing page
+- `artifacts/undersole/src/pages/IssuePage.tsx` — long-form reader and interactive editorial components
+- `artifacts/undersole/src/components/editorial.tsx` — shared navigation, newsletter, lightbox, quote, audio, and story-card UI
+- `artifacts/undersole/src/index.css` — UNDERSOLE visual language and responsive layout
+- `lib/api-spec/openapi.yaml` — source of truth for subscriber API contracts
+- `artifacts/api-server/src/routes/subscriptions.ts` — subscriber count, signup, and protected email test routes
+- `lib/db/src/schema/subscribers.ts` — persistent subscriber schema
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The frontend is a React + Vite artifact while the shared Express API owns subscriptions and email delivery.
+- Subscriber emails are normalized and persisted in PostgreSQL with a unique constraint before welcome-email delivery is attempted.
+- Resend failures are logged but do not invalidate a successful subscription.
+- The public UI uses generated API hooks from the OpenAPI contract.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Read the full Issue 01 editorial with a fixed progress indicator and table of contents.
+- Browse five story previews, open the cover in a lightbox, filter the customizer ranking, copy pull quotes, and toggle the interview audio shell.
+- Subscribe inline from the homepage or reader page and receive a Resend welcome email when configured.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep the visual language dark, editorial, sharp-edged, and rooted in Indian sneaker culture.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- `RESEND_API_KEY` is required for welcome-email delivery; subscription persistence still succeeds if Resend is unavailable.
+- The protected `/api/subscribe/test` route also requires `ADMIN_PASS` to be configured.
+- Run API codegen after changing `lib/api-spec/openapi.yaml`.
 
 ## Pointers
 

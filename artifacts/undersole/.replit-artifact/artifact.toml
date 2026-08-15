@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "UNDERSOLE"
+description = "A dark editorial web zine about India's sneaker and streetwear scene, featuring Issue 01 stories, interactive reading tools, and a real newsletter signup with welcome email delivery."
+version = "1.0.0"
+id = "artifacts/undersole"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25694
+
+[services.development]
+run = "pnpm --filter @workspace/undersole run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/undersole", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/undersole/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25694"
+BASE_PATH = "/"

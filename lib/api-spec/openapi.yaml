@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: subscriptions
+    description: Newsletter subscription operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,72 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /subscribers/count:
+    get:
+      operationId: getSubscriberCount
+      tags: [subscriptions]
+      summary: Get the current subscriber count
+      responses:
+        "200":
+          description: Current subscriber count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriberCount"
+  /subscribe:
+    post:
+      operationId: subscribeToNewsletter
+      tags: [subscriptions]
+      summary: Subscribe an email address to the newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionInput"
+      responses:
+        "200":
+          description: Subscription result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionResult"
+        "400":
+          description: Invalid email address
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /subscribe/test:
+    post:
+      operationId: runSubscriptionTest
+      tags: [subscriptions]
+      summary: Trigger a protected welcome email test
+      parameters:
+        - in: header
+          name: x-admin-pass
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionTestInput"
+      responses:
+        "200":
+          description: Test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionTestResult"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +101,60 @@ components:
           type: string
       required:
         - status
+    SubscriberCount:
+      type: object
+      properties:
+        count:
+          type: number
+          minimum: 0
+      required:
+        - count
+    SubscriptionInput:
+      type: object
+      properties:
+        email:
+          type: string
+          minLength: 3
+      required:
+        - email
+    SubscriptionResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        subscriberCount:
+          type: number
+          minimum: 0
+      required:
+        - success
+        - message
+        - subscriberCount
+    SubscriptionTestInput:
+      type: object
+      properties:
+        email:
+          type: string
+          minLength: 3
+    SubscriptionTestResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        emailSent:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - emailSent
+        - message
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
 

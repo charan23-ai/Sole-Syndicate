@@ -1,0 +1,20 @@
+import { createInsertSchema } from "drizzle-zod";
+import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { z } from "zod/v4";
+
+export const subscribersTable = pgTable("subscribers", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  subscribedAt: timestamp("subscribed_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  source: text("source").notNull().default("homepage"),
+});
+
+export const insertSubscriberSchema = createInsertSchema(subscribersTable).omit({
+  id: true,
+  subscribedAt: true,
+});
+
+export type InsertSubscriber = z.infer<typeof insertSubscriberSchema>;
+export type Subscriber = typeof subscribersTable.$inferSelect;
