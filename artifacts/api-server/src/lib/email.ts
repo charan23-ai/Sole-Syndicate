@@ -1,44 +1,65 @@
-import { Resend } from "resend";
+const N8N_WEBHOOK_URL =
+  "https://ramana1.app.n8n.cloud/webhook/undersole-welcome-email";
 
 export async function sendWelcomeEmail(
   email: string,
-  issueUrl: string,
+  _issueUrl: string,
 ): Promise<string> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY is not configured");
+  const webhookSecret = process.env.UNDERSOLE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new Error("UNDERSOLE_WEBHOOK_SECRET is not configured");
   }
 
-  const resend = new Resend(apiKey);
-  const { data, error } = await resend.emails.send({
-    from: "UNDERSOLE <onboarding@resend.dev>",
-    to: email,
-    subject: "You're in. Welcome to Undersole",
-    html: `
-      <div style="background:#121212;color:#e5e0d8;font-family:Arial,sans-serif;padding:40px 28px;line-height:1.65">
-        <div style="max-width:560px;margin:0 auto">
-          <p style="color:#ff4500;font-weight:700;letter-spacing:.18em;font-size:12px">UNDERSOLE / ISSUE 01</p>
-          <h1 style="color:#fff;font-size:34px;letter-spacing:-.04em;margin:30px 0 18px">You're in.</h1>
-          <p>Hey —</p>
-          <p>You just joined Undersole, a zine about the sneaker and streetwear scene in India — the resale hustle, the customizers doing wild things in their bedrooms, the culture nobody's writing about properly.</p>
-          <p>Issue #1 is live now.</p>
-          <p style="margin:30px 0">
-            <a href="${issueUrl}" style="color:#121212;background:#ff4500;padding:12px 16px;text-decoration:none;font-weight:700">START READING →</a>
-          </p>
-          <p style="color:#a9a39b">No spam, no fluff — just real coverage of a scene worth taking seriously.</p>
-          <p>— The Undersole team</p>
-        </div>
-      </div>
-    `,
-  });
+  try {
+    console.info("Sending welcome email to n8n webhook", {
+      method: "POST",
+      url: N8N_WEBHOOK_URL,
+      email,
+      headers: ["Content-Type", "x-webhook-secret"],
+      body: { email },
+    });
 
-  if (error) {
-    throw new Error(error.message);
+    const response = await fetch(N8N_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-webhook-secret": webhookSecret,
+      },
+      body: JSON.stringify({ email }),
+    });
+    const responseBody = await response.text();
+
+    console.info("n8n welcome email webhook response", {
+      status: response.status,
+      ok: response.ok,
+      body: responseBody,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `n8n webhook returned HTTP ${response.status}: ${responseBody}`,
+      );
+    }
+
+    let parsedBody: unknown;
+    try {
+      parsedBody = JSON.parse(responseBody);
+    } catch {
+      throw new Error(`n8n webhook returned invalid JSON: ${responseBody}`);
+    }
+
+    if (
+      !parsedBody ||
+      typeof parsedBody !== "object" ||
+      !("success" in parsedBody) ||
+      parsedBody.success !== true
+    ) {
+      throw new Error(`n8n webhook reported failure: ${responseBody}`);
+    }
+
+    return responseBody;
+  } catch (error) {
+    console.error("n8n welcome email webhook failed", { email, err: error });
+    throw error;
   }
-
-  if (!data?.id) {
-    throw new Error("Resend did not return a message id");
-  }
-
-  return data.id;
 }

@@ -90,8 +90,11 @@ router.post("/subscribe/test", async (req, res): Promise<void> => {
 
   try {
     const origin = `${req.protocol}://${req.get("host")}`;
-    const resendId = await sendWelcomeEmail(email, `${origin}/issue-1`);
-    req.log.info({ email, resendId }, "Subscription test email sent via Resend");
+    const n8nResponse = await sendWelcomeEmail(email, `${origin}/issue-1`);
+    req.log.info(
+      { email, n8nResponse },
+      "Subscription test email sent via n8n",
+    );
     res.json(
       RunSubscriptionTestResponse.parse({
         success: true,

@@ -49,7 +49,7 @@ An editorial web zine about India's sneaker and streetwear scene, with Issue 01 
 
 ## Gotchas
 
-- `RESEND_API_KEY` is required for welcome-email delivery; subscription persistence still succeeds if Resend is unavailable.
+- `UNDERSOLE_WEBHOOK_SECRET` is required for welcome-email delivery through the n8n webhook; subscription persistence still succeeds if n8n is unavailable.
 - The protected `/api/subscribe/test` route also requires `ADMIN_PASS` to be configured.
 - Run API codegen after changing `lib/api-spec/openapi.yaml`.
 

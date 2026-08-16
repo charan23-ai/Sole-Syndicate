@@ -1,0 +1,26 @@
+Replace the Resend-based email sending with a call to an n8n webhook instead. The n8n workflow is already built and live — I'm giving you its URL and shared secret now.
+
+1) Add two new environment variables to Replit Secrets (I will add these myself):
+   - N8N_WEBHOOK_URL — the production webhook URL from n8n (e.g. https://[my-instance].app.n8n.cloud/webhook/undersole-welcome-email)
+   - UNDERSOLE_WEBHOOK_SECRET — the shared secret string, must exactly match the value configured in the n8n workflow's validation step
+
+2) In the existing sendWelcomeEmail() function (or wherever the Resend call currently lives), replace the Resend API call with a POST request to process.env.N8N_WEBHOOK_URL, sending this JSON body:
+   {
+     "email": "<the real subscriber email>",
+     "secret": process.env.UNDERSOLE_WEBHOOK_SECRET
+   }
+
+3) Handle the response properly:
+   - If n8n responds with { "success": true, ... } and HTTP 200: treat the subscription as fully successful, log the confirmation
+   - If n8n responds with { "success": false, ... } or a non-200 status: log the failure clearly (include the response body in the log), but still let the subscriber's record persist in the database — a failed welcome email should never roll back or block the subscription itself, same rule as before with Resend
+   - Wrap the fetch call in try/catch to handle network failures/timeouts gracefully, not just API-level errors
+
+4) Remove the Resend package dependency and any leftover Resend-specific code (API key references, resend.emails.send() calls) once the n8n integration is confirmed working — don't leave dead code that references a RESEND_API_KEY that's no longer used.
+
+5) Test end to end:
+   - Hit /api/subscribe/test with the ADMIN_PASS header as before
+   - Confirm the server logs show a POST going out to N8N_WEBHOOK_URL
+   - Confirm the response logged back from n8n shows { "success": true }
+   - Confirm a real welcome email actually arrives in the test recipient's inbox (not a simulation address)
+
+Show me the exact log output from a successful test run, including the n8n response body, before we call this done.
