@@ -38,10 +38,33 @@ export function Nav({ reader = false }: { reader?: boolean }) {
 }
 
 export function Newsletter() {
+  const subscribeMode =
+    (import.meta.env.VITE_SUBSCRIBE_MODE as string) ||
+    (import.meta.env.SUBSCRIBE_MODE as string) ||
+    'substack';
+
+  const rawSubstackUrl =
+    (import.meta.env.VITE_SUBSTACK_URL as string) ||
+    (import.meta.env.SUBSTACK_URL as string) ||
+    'https://undersole.substack.com';
+
+  const cleanSubstackUrl = rawSubstackUrl.startsWith('http')
+    ? rawSubstackUrl
+    : `https://${rawSubstackUrl}`;
+
+  const embedUrl = cleanSubstackUrl.endsWith('/embed')
+    ? cleanSubstackUrl
+    : `${cleanSubstackUrl.replace(/\/$/, '')}/embed`;
+
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const queryClient = useQueryClient();
-  const subscriber = useGetSubscriberCount({ query: { queryKey: getGetSubscriberCountQueryKey() } });
+  const subscriber = useGetSubscriberCount({
+    query: {
+      queryKey: getGetSubscriberCountQueryKey(),
+      enabled: subscribeMode === 'custom',
+    },
+  });
   const subscribe = useSubscribeToNewsletter();
   const count = subscriber.data?.count ?? 0;
   const submit = (event: FormEvent) => {
@@ -54,16 +77,33 @@ export function Newsletter() {
     });
   };
   return <section className="newsletter" style={{backgroundImage:`url(${textures.banner})`}} data-testid="section-newsletter">
-    <div className="subscriber"><strong data-testid="text-subscriber-count">{count.toLocaleString()}</strong> readers inside</div>
+    {subscribeMode === 'custom' && <div className="subscriber"><strong data-testid="text-subscriber-count">{count.toLocaleString()}</strong> readers inside</div>}
     <div className="newsletter-inner">
       <div><span className="kicker">The dispatch / once a month</span><h2>No hype.<br />Just signal.</h2></div>
       <div>
-        <form className="newsletter-form" onSubmit={submit}>
-          <Mail size={15} className="orange" />
-          <input data-testid="input-newsletter-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" aria-label="Email address" />
-          <button data-testid="button-newsletter-submit" type="submit">{subscribe.isPending ? 'Joining' : 'Join'}</button>
-        </form>
-        {message && <div className="form-message" data-testid="status-newsletter">{message}</div>}
+        {subscribeMode === 'substack' ? (
+          <div data-testid="substack-embed-container" style={{ width: '100%', maxWidth: '480px' }}>
+            <iframe
+              src={embedUrl}
+              width="100%"
+              height="150"
+              style={{ border: '0', background: 'transparent', borderRadius: '4px' }}
+              frameBorder="0"
+              scrolling="no"
+              title="Subscribe on Substack"
+              data-testid="iframe-substack-embed"
+            />
+          </div>
+        ) : (
+          <>
+            <form className="newsletter-form" onSubmit={submit}>
+              <Mail size={15} className="orange" />
+              <input data-testid="input-newsletter-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" aria-label="Email address" />
+              <button data-testid="button-newsletter-submit" type="submit">{subscribe.isPending ? 'Joining' : 'Join'}</button>
+            </form>
+            {message && <div className="form-message" data-testid="status-newsletter">{message}</div>}
+          </>
+        )}
       </div>
     </div>
   </section>;

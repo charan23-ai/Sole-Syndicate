@@ -1,0 +1,9 @@
+{
+  "outputDirectory": "artifacts/undersole/dist/public",
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

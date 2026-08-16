@@ -32,6 +32,14 @@ export default defineConfig(async ({ command, mode }) => {
 
   return {
     base: basePath,
+    define: {
+      'import.meta.env.VITE_SUBSCRIBE_MODE': JSON.stringify(
+        process.env.VITE_SUBSCRIBE_MODE || process.env.SUBSCRIBE_MODE || 'substack'
+      ),
+      'import.meta.env.VITE_SUBSTACK_URL': JSON.stringify(
+        process.env.VITE_SUBSTACK_URL || process.env.SUBSTACK_URL || 'https://undersole.substack.com'
+      ),
+    },
     plugins: [
       react(),
       tailwindcss(),
