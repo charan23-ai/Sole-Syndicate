@@ -3,14 +3,14 @@ import { Resend } from "resend";
 export async function sendWelcomeEmail(
   email: string,
   issueUrl: string,
-): Promise<void> {
+): Promise<string> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     throw new Error("RESEND_API_KEY is not configured");
   }
 
   const resend = new Resend(apiKey);
-  const { error } = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: "UNDERSOLE <onboarding@resend.dev>",
     to: email,
     subject: "You're in. Welcome to Undersole",
@@ -35,4 +35,10 @@ export async function sendWelcomeEmail(
   if (error) {
     throw new Error(error.message);
   }
+
+  if (!data?.id) {
+    throw new Error("Resend did not return a message id");
+  }
+
+  return data.id;
 }

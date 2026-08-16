@@ -63,7 +63,7 @@ export const runSubscriptionTestBodyEmailMin = 3;
 
 
 export const RunSubscriptionTestBody = zod.object({
-  "email": zod.string().min(runSubscriptionTestBodyEmailMin).optional()
+  "email": zod.string().min(runSubscriptionTestBodyEmailMin)
 })
 
 export const RunSubscriptionTestResponse = zod.object({

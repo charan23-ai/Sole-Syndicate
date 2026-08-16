@@ -24,6 +24,23 @@ export default function IssuePage() {
   const [filter, setFilter] = useState('all');
   const [scroll, setScroll] = useState(0);
   useEffect(() => { const fn = () => { const max = document.documentElement.scrollHeight - window.innerHeight; const ratio = max > 0 ? window.scrollY / max : 0; setScroll(ratio); const bar = document.getElementById('reading-progress'); if (bar) bar.style.transform = `scaleX(${ratio})`; }; window.addEventListener('scroll', fn, {passive:true}); fn(); return () => window.removeEventListener('scroll', fn); }, []);
+  useEffect(() => {
+    const scrollToHash = () => {
+      const targetId = window.location.hash.slice(1);
+      if (!targetId) return;
+
+      window.requestAnimationFrame(() => {
+        document.getElementById(targetId)?.scrollIntoView({ behavior: 'auto', block: 'start' });
+      });
+    };
+
+    const initialScroll = window.setTimeout(scrollToHash, 0);
+    window.addEventListener('hashchange', scrollToHash);
+    return () => {
+      window.clearTimeout(initialScroll);
+      window.removeEventListener('hashchange', scrollToHash);
+    };
+  }, []);
   const ranks = useMemo(() => filter === 'all' ? rankData : rankData.filter(row => row[2] === filter), [filter]);
   const locations = ['all', ...Array.from(new Set(rankData.map(row => row[2])))];
   return <div className="page-in"><div className="grain" style={{backgroundImage:`url(${textures.masthead})`}} /><Nav reader />

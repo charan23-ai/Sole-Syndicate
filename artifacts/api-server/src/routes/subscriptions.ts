@@ -82,7 +82,7 @@ router.post("/subscribe/test", async (req, res): Promise<void> => {
     return;
   }
 
-  const email = parsed.data.email?.trim().toLowerCase() ?? "test@undersole.local";
+  const email = parsed.data.email.trim().toLowerCase();
   if (!emailPattern.test(email)) {
     res.status(400).json({ error: "Enter a valid test email address." });
     return;
@@ -90,7 +90,8 @@ router.post("/subscribe/test", async (req, res): Promise<void> => {
 
   try {
     const origin = `${req.protocol}://${req.get("host")}`;
-    await sendWelcomeEmail(email, `${origin}/issue-1`);
+    const resendId = await sendWelcomeEmail(email, `${origin}/issue-1`);
+    req.log.info({ email, resendId }, "Subscription test email sent via Resend");
     res.json(
       RunSubscriptionTestResponse.parse({
         success: true,
@@ -100,7 +101,7 @@ router.post("/subscribe/test", async (req, res): Promise<void> => {
     );
   } catch (error) {
     req.log.error({ err: error, email }, "Subscription test email failed");
-    res.json(
+    res.status(502).json(
       RunSubscriptionTestResponse.parse({
         success: false,
         emailSent: false,

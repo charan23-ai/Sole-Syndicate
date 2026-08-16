@@ -1,0 +1,14 @@
+Two remaining issues to fix:
+
+1) EMAIL RECIPIENT BUG — The test-send route is currently sending to a hardcoded "delivered@resend.dev" (Resend's built-in simulation address) instead of the actual recipient email being passed in. Find where this is hardcoded in the /api/subscribe/test route (or in the sendWelcomeEmail helper) and replace it with the real recipient parameter passed into the function/request. Confirm the "to" field in the Resend send() call is using a variable, not a literal string. After fixing, send a real test to [YOUR ACTUAL EMAIL ADDRESS HERE] and confirm in the Resend dashboard logs that it was sent to that address, not the simulation one.
+
+Also double check: if RESEND_API_KEY is still a test/sandbox key rather than a verified-domain key, Resend may restrict real delivery regardless of the "to" field — confirm whether the account has a verified sending domain, and if not, tell me what's needed to verify one (or confirm sending is allowed to any address on the current plan).
+
+2) HYPERLINKS STILL BROKEN — The previous fix to route "Read →" cards to /issue-1#piece-x did not fully work. Debug this properly:
+- Print/show me the exact href value being rendered on each of the 5 homepage cards
+- Print/show me the exact id attribute on each of the 5 corresponding section elements on /issue-1
+- Confirm these match EXACTLY (case-sensitive, no typos, no extra characters)
+- Confirm the Link component is using Next.js's <Link href="/issue-1#piece-1"> syntax correctly and not being intercepted by an onClick handler or client-side router that's stripping the hash
+- Test by manually navigating to /issue-1#piece-1 directly via URL bar first — if that alone doesn't scroll to the right section, the bug is in the anchor IDs on the reader page, not the homepage links. Fix whichever side is actually broken.
+
+Confirm both fixes with: a real inbox screenshot-able delivery to my actual email, and all 5 links manually clicked and visually verified to land on the correct section.

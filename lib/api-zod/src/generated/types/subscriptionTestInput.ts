@@ -8,5 +8,5 @@
 
 export interface SubscriptionTestInput {
   /** @minLength 3 */
-  email?: string;
+  email: string;
 }

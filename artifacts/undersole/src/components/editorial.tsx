@@ -100,11 +100,11 @@ export function AudioShell() {
 }
 
 export const storyMeta = [
-  { no:'01', title:"The rise of India's sneaker resale economy", type:'Deep-dive', image:images.resale, href:'#piece-1' },
-  { no:'02', title:'Lost & Found: worth the hype in India?', type:'Review', image:images.aj1, href:'#piece-2' },
-  { no:'03', title:'Top 10 Indian sneaker customizers right now', type:'Ranking', image:images.customizer, href:'#piece-3' },
-  { no:'04', title:'Cricket culture meets sneaker culture', type:'Trend analysis', image:images.cricket, href:'#piece-4' },
-  { no:'05', title:'The interview: Rehan, underground customizer', type:'Simulated interview', image:images.rehan, href:'#piece-5' },
+  { no:'01', title:"The rise of India's sneaker resale economy", type:'Deep-dive', image:images.resale, href:'/issue-1#piece-1' },
+  { no:'02', title:'Lost & Found: worth the hype in India?', type:'Review', image:images.aj1, href:'/issue-1#piece-2' },
+  { no:'03', title:'Top 10 Indian sneaker customizers right now', type:'Ranking', image:images.customizer, href:'/issue-1#piece-3' },
+  { no:'04', title:'Cricket culture meets sneaker culture', type:'Trend analysis', image:images.cricket, href:'/issue-1#piece-4' },
+  { no:'05', title:'The interview: Rehan, underground customizer', type:'Simulated interview', image:images.rehan, href:'/issue-1#piece-5' },
 ];
 
 export function StoryCard({ story, index }: { story: typeof storyMeta[number]; index: number }) {
