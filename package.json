@@ -16,6 +16,7 @@
     "drizzle-orm": "catalog:"
   },
   "devDependencies": {
+    "@types/node": "catalog:",
     "@vercel/node": "^5.10.1",
     "prettier": "^3.9.6",
     "typescript": "~5.9.3"
