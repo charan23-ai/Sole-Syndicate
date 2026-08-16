@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 const N8N_WEBHOOK_URL = "https://ramana1.app.n8n.cloud/webhook/undersole-welcome-email";
 export async function sendWelcomeEmail(email, _issueUrl) {
     const webhookSecret = process.env.UNDERSOLE_WEBHOOK_SECRET;
@@ -11,14 +12,14 @@ export async function sendWelcomeEmail(email, _issueUrl) {
         headers: ["Content-Type", "x-webhook-secret"],
         body: { email },
     });
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const response = (await fetch(N8N_WEBHOOK_URL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "x-webhook-secret": webhookSecret,
         },
         body: JSON.stringify({ email }),
-    });
+    }));
     const responseBody = await response.text();
     console.info("n8n welcome email webhook response", {
         status: response.status,
