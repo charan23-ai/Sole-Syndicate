@@ -4,7 +4,9 @@ import { db, subscribersTable } from "@workspace/db";
 import { GetSubscriberCountResponse } from "@workspace/api-zod";
 
 export async function getSubscriberTotal(): Promise<number> {
-  const [result] = await db.select({ count: count() }).from(subscribersTable);
+  const [result] = await db
+    .select({ count: count(subscribersTable.id) })
+    .from(subscribersTable);
   return Number(result?.count ?? 0);
 }
 
